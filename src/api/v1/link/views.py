@@ -14,7 +14,7 @@ router = APIRouter(prefix="/link")
 
 
 @router.get("/{link_id}", response_model=LinkSchema)
-async def get_link(link_id: int, repo: AbstractLinkRepository = Depends()) -> JSONResponse:
+async def get_link(link_id: int, repo: AbstractLinkRepository = Depends(get_link_repo)) -> JSONResponse:
     try:
         link = repo.get(link_id)
     except LinkNotFoundError as exc:
@@ -32,7 +32,7 @@ async def get_link(link_id: int, repo: AbstractLinkRepository = Depends()) -> JS
 
 @router.get("", response_model=ListLinkSchema)
 async def list_links(pagination: Pagination = Depends(), repo: AbstractLinkRepository = Depends(get_link_repo)) -> JSONResponse:
-    links = repo.list(pagination.limit, pagination.offset)
+    links = repo.list(limit=pagination.limit, offset=pagination.offset)
     content = [
         ListLinkSchema(
             id=link.id,
@@ -46,7 +46,7 @@ async def list_links(pagination: Pagination = Depends(), repo: AbstractLinkRepos
 
 
 @router.post("", response_model=LinkSchema)
-async def create_link(payload: LinkCreateSchema, repo: AbstractLinkRepository = Depends()) -> JSONResponse:
+async def create_link(payload: LinkCreateSchema, repo: AbstractLinkRepository = Depends(get_link_repo)) -> JSONResponse:
     dto = LinkCreateDTO(
         original_url=payload.original_url,
         short_url=payload.short_url,
@@ -64,7 +64,7 @@ async def create_link(payload: LinkCreateSchema, repo: AbstractLinkRepository = 
 
 
 @router.patch("/{link_id}", response_model=LinkSchema)
-async def update_link(link_id: int, payload: LinkUpdateSchema, repo: AbstractLinkRepository = Depends()) -> JSONResponse:
+async def update_link(link_id: int, payload: LinkUpdateSchema, repo: AbstractLinkRepository = Depends(get_link_repo)) -> JSONResponse:
     dto = LinkUpdateDTO(
         original_url=payload.original_url,
         short_url=payload.short_url,
